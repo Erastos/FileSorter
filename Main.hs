@@ -34,3 +34,12 @@ getOldPath :: FilePath -> [FilePath] -> [FilePath]
 getOldPath cwd = map (\file -> cwd ++ "/" ++ file)
 
 
+main :: FilePath -> IO ()
+main dir = do
+  -- Get Files
+  files <- getFiles dir
+  -- Create Directories From Files
+  dirs <- mapM (createDirectoryIfMissing True) (map (\x -> dir ++ "/" ++ lookupFileExtension x) files)
+  -- Move Files to Directories
+  mapM (\(old,new) -> renamePath old new) (zip (getOldPath dir files) (getNewPath dir files))
+  print "Done"
