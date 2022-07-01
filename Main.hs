@@ -16,8 +16,21 @@ getFiles dir = (removeHiddenFiles <$> listDirectory dir) >>= filterM (\x -> does
 removeHiddenFiles :: [FilePath] -> [FilePath]
 removeHiddenFiles = filter (\x -> head x /= '.')
 
+getFilename :: FilePath -> FilePath
+getFilename = fst . break (=='.')
+
+getFileExtension :: FilePath -> FilePath
+getFileExtension = snd . break (=='.')
+
+lookupFileExtension :: FilePath -> FilePath
+lookupFileExtension file = case (M.lookup (getFileExtension file) fileExtensions) of
+  Just x -> x
+  Nothing -> "Other"
+
 getNewPath :: FilePath -> [FilePath] -> [FilePath]
-getNewPath cwd files = map (\file -> determineLoc file (M.lookup (snd $ break (=='.') file) fileExtensions)) files
-  where
-    determineLoc file (Just x) = cwd ++ "/" ++ x ++ "/" ++ file
-    determineLoc file Nothing =  cwd ++ "/Other/" ++ file
+getNewPath cwd = map (\file -> cwd ++ "/" ++ (lookupFileExtension file) ++ "/" ++ file)
+
+getOldPath :: FilePath -> [FilePath] -> [FilePath]
+getOldPath cwd = map (\file -> cwd ++ "/" ++ file)
+
+
