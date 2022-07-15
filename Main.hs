@@ -12,7 +12,6 @@ fileExtensions = M.fromList [(".txt", "Text"), (".hs", "Haskell")]
 getFiles :: FilePath -> IO [FilePath]
 getFiles dir = (removeHiddenFiles <$> listDirectory dir) >>= filterM (\x -> doesFileExist (dir ++ "/" ++ x))
 
-
 removeHiddenFiles :: [FilePath] -> [FilePath]
 removeHiddenFiles = filter (\x -> head x /= '.')
 
@@ -33,13 +32,18 @@ getNewPath cwd = map (\file -> cwd ++ "/" ++ (lookupFileExtension file) ++ "/" +
 getOldPath :: FilePath -> [FilePath] -> [FilePath]
 getOldPath cwd = map (\file -> cwd ++ "/" ++ file)
 
+createDirectories :: FilePath -> [FilePath] -> IO [()]
+createDirectories dir files = mapM (createDirectoryIfMissing True) (map (\x -> dir ++ "/" ++ lookupFileExtension x) files)
+
+moveFiles :: FilePath -> [FilePath] -> IO [()]
+moveFiles dir files = mapM (\(old,new) -> renamePath old new) (zip (getOldPath dir files) (getNewPath dir files))
 
 main :: FilePath -> IO ()
 main dir = do
   -- Get Files
   files <- getFiles dir
   -- Create Directories From Files
-  dirs <- mapM (createDirectoryIfMissing True) (map (\x -> dir ++ "/" ++ lookupFileExtension x) files)
+  dirs <- createDirectories dir files
   -- Move Files to Directories
-  mapM (\(old,new) -> renamePath old new) (zip (getOldPath dir files) (getNewPath dir files))
+  moveFiles dir files
   print "Done"
