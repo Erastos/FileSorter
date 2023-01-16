@@ -1,6 +1,7 @@
 module Test where
 
 import System.Directory
+import System.Environment
 import Control.Monad
 import qualified Data.Map as M
 
@@ -38,9 +39,13 @@ createDirectories dir files = mapM (createDirectoryIfMissing True) (map (\x -> d
 moveFiles :: FilePath -> [FilePath] -> IO [()]
 moveFiles dir files = mapM (\(old,new) -> renamePath old new) (zip (getOldPath dir files) (getNewPath dir files))
 
+getFirstArg :: IO String
+getFirstArg = fmap (!!1) getArgs
+
 main :: FilePath -> IO ()
 main dir = do
   -- Get Files
+   <- getFirstArg
   files <- getFiles dir
   -- Create Directories From Files
   dirs <- createDirectories dir files
